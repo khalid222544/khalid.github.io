@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AuraChat • Real-time Facial Axis Emotion Messaging</title>
+  <meta name="description" content="Realistic mobile-first messaging app powered by real-time facial axis tracking, neutral baseline calibration, and emotional typography.">
+  <meta name="theme-color" content="#0b141a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <div class="app-container" id="app">
+
+    <!-- TOP NAVIGATION BAR (Realistic WhatsApp App Bar) -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-badge">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>AuraChat</h1>
+            <span class="brand-sub">FACS-Guided Expression AI</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Emotion Status Pill -->
+      <div class="nav-center">
+        <button class="live-emotion-display" id="liveEmotionDisplay" title="Click to recalibrate neutral face">
+          <span class="pulse-dot active" id="pulseDot"></span>
+          <span class="emotion-icon" id="headerEmotionIcon">😐</span>
+          <span class="emotion-name" id="headerEmotionName">Neutral</span>
+          <span class="emotion-coord-badge" id="valCoord">+0.00</span>
+        </button>
+      </div>
+
+      <!-- Nav Actions -->
+      <div class="nav-right">
+        <!-- Guided 3-Step Face Setup Button -->
+        <button class="nav-btn primary-action-btn" id="btnWizardCalibrate" title="Guided 3-Step Face Setup (Neutral, Smile, Anger)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+          <span class="btn-label">Face Setup 🎯</span>
+        </button>
+
+        <!-- Quick Reset Neutral Button -->
+        <button class="nav-btn" id="btnCalibrateNeutral" title="Quick Calibrate Neutral Face">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="btn-label" id="calibrateBtnText">Reset 😐</span>
+        </button>
+
+        <!-- Toggle Camera Button -->
+        <button class="nav-btn" id="btnToggleCamera" title="Toggle Camera">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          <span class="btn-label" id="camBtnLabel">Camera</span>
+        </button>
+
+        <!-- Toggle Telemetry / 3D Axis HUD -->
+        <button class="nav-btn icon-only-btn" id="btnToggleMeshHUD" title="View 3D Facial Axis Telemetry">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M12 2v20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/></svg>
+        </button>
+
+        <!-- Guide Modal Trigger -->
+        <button class="nav-btn icon-only-btn" id="btnIntegrationGuide" title="Architecture & Extension Guide">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- GUIDED 3-STEP BIOMETRIC CALIBRATION STUDIO -->
+    <div class="calibration-overlay" id="calibrationOverlay" style="display: none;">
+      <div class="calibration-box">
+        <div class="wizard-header">
+          <span class="wizard-step-badge" id="wizardStepBadge">Step 1 of 3</span>
+          <button class="wizard-close-btn" id="btnCancelWizard" title="Cancel">&times;</button>
+        </div>
+
+        <div class="wizard-icon-container">
+          <div class="wizard-emoji" id="wizardEmoji">😐</div>
+          <div class="wizard-ring-pulse" id="wizardRingPulse"></div>
+        </div>
+
+        <h3 id="wizardTitle">1. Natural Resting Face</h3>
+        <p id="wizardDesc">Relax your face and look straight at the camera with your normal resting expression.</p>
+
+        <div class="cal-progress-bar">
+          <div class="cal-progress-fill" id="calProgressFill" style="width: 0%;"></div>
+        </div>
+        <div class="wizard-status-row">
+          <span class="cal-pct" id="calProgressPct">0%</span>
+          <span class="wizard-substatus" id="wizardSubStatus">Recording neutral resting baseline...</span>
+        </div>
+
+        <div class="wizard-actions">
+          <button type="button" class="wizard-btn secondary" id="btnQuickFinish">Quick Neutral Only</button>
+          <button type="button" class="wizard-btn primary" id="btnNextWizardStep" style="display: none;">Next Step</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CHAT APP WRAPPER -->
+    <main class="chat-layout" id="chatLayout">
+
+      <!-- LEFT SIDEBAR: CONTACTS & CHATS (WhatsApp Mobile/Desktop Chats Screen) -->
+      <aside class="chat-sidebar" id="chatSidebar">
+        <div class="sidebar-header">
+          <div class="user-profile">
+            <div class="avatar my-avatar" id="myAvatar">
+              <span class="avatar-text">ME</span>
+              <div class="avatar-emotion-ring" id="myAvatarRing"></div>
+            </div>
+            <div class="profile-info">
+              <span class="user-name">Chats</span>
+              <span class="user-emotion-tag" id="userEmotionTag">Resting Baseline</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="sidebar-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="contactSearch" placeholder="Search chats...">
+        </div>
+
+        <!-- Contact List -->
+        <div class="contact-list" id="contactList">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </aside>
+
+      <!-- CENTER/RIGHT: ACTIVE CHAT CONVERSATION -->
+      <section class="chat-viewport" id="chatViewport">
+        <!-- Active Chat Header -->
+        <div class="chat-header" id="activeChatHeader">
+          <div class="chat-contact-info">
+            <!-- Mobile Back Button (Visible only on mobile screens) -->
+            <button class="mobile-back-btn" id="btnBackToContacts" title="Back to chats" aria-label="Back">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+
+            <div class="avatar-wrapper">
+              <div class="avatar contact-avatar" id="currentContactAvatar">AH</div>
+              <div class="avatar-emotion-badge" id="currentContactEmotionBadge">✨</div>
+            </div>
+            <div class="contact-details">
+              <h2 class="contact-name" id="currentContactName">Ahmed</h2>
+              <span class="contact-status" id="currentContactStatus">online • Emotion Aura Active</span>
+            </div>
+          </div>
+
+          <div class="chat-header-actions">
+            <button class="header-action-btn" id="btnClearChat" title="Clear Conversation">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages Scroll Container -->
+        <div class="messages-container" id="messagesContainer">
+          <!-- Messages rendered dynamically -->
+        </div>
+
+        <!-- Tone Mismatch Alert Banner (Sarcasm / Masked Emotion) -->
+        <div class="tone-mismatch-banner" id="toneMismatchBanner" style="display: none;">
+          <div class="mismatch-icon">⚡</div>
+          <div class="mismatch-content">
+            <strong id="mismatchTitle">Expression vs Text Mismatch!</strong>
+            <p id="mismatchDesc">Smiling while typing aggressive text detected.</p>
+          </div>
+          <button class="mismatch-dismiss" id="btnDismissMismatch">&times;</button>
+        </div>
+
+        <!-- CHAT INPUT COMPOSER AREA (Realistic WhatsApp Input) -->
+        <div class="chat-composer-section">
+
+          <!-- Live User Facial Expression Indicator & Quick Override Chips -->
+          <div class="composer-emotion-toolbar" id="composerEmotionToolbar">
+            <div class="auto-detected-badge" id="autoDetectedBadge">
+              <span class="badge-label">AI Face:</span>
+              <span class="badge-emotion-pill" id="badgeEmotionPill">
+                <span class="pill-emoji" id="pillEmoji">😐</span>
+                <span class="pill-name" id="pillName">Neutral Baseline</span>
+              </span>
+            </div>
+
+            <!-- Quick Mood / Testing Override Chips -->
+            <div class="emotion-override-chips" id="emotionOverrideChips">
+              <button type="button" class="mood-chip active" data-mood="auto" id="chipAuto" title="Real-time Camera Face AI">⚡ Live AI</button>
+              <button type="button" class="mood-chip" data-mood="happy" title="Joy / Emerald">😊 Joy</button>
+              <button type="button" class="mood-chip" data-mood="angry" title="Angry / Crimson">😠 Anger</button>
+              <button type="button" class="mood-chip" data-mood="sad" title="Sad / Azure">😢 Sad</button>
+              <button type="button" class="mood-chip" data-mood="surprised" title="Surprise / Violet">😮 Surprise</button>
+              <button type="button" class="mood-chip" data-mood="neutral" title="Calm / Slate">😐 Calm</button>
+            </div>
+
+            <!-- Real-time Sensitivity Control -->
+            <div class="sensitivity-control" id="sensitivityControl">
+              <span class="sens-label">Sensitivity: <strong id="sensVal">1.4x</strong></span>
+              <input type="range" id="sensRange" min="0.6" max="2.6" step="0.1" value="1.4" class="sens-slider" title="Adjust reaction sensitivity">
+            </div>
+          </div>
+
+          <!-- Real-Time AI Emotion Confidence Diagnostic HUD -->
+          <div class="live-confidence-meter" id="liveConfidenceMeter">
+            <div class="conf-item angry-bar-item" id="meterAngry" title="Anger/Scowl Confidence">
+              <span class="conf-label">😠 Anger</span>
+              <div class="conf-track"><div class="conf-fill angry-fill" id="fillAngry" style="width: 2%;"></div></div>
+              <span class="conf-pct" id="pctAngry">2%</span>
+            </div>
+            <div class="conf-item happy-bar-item" id="meterHappy" title="Joy/Smile Confidence">
+              <span class="conf-label">😊 Joy</span>
+              <div class="conf-track"><div class="conf-fill happy-fill" id="fillHappy" style="width: 3%;"></div></div>
+              <span class="conf-pct" id="pctHappy">3%</span>
+            </div>
+            <div class="conf-item calm-bar-item" id="meterCalm" title="Calm/Neutral Baseline">
+              <span class="conf-label">😐 Calm</span>
+              <div class="conf-track"><div class="conf-fill calm-fill" id="fillCalm" style="width: 95%;"></div></div>
+              <span class="conf-pct" id="pctCalm">95%</span>
+            </div>
+            <div class="conf-item surprise-bar-item" id="meterSurprise" title="Surprise Confidence">
+              <span class="conf-label">😮 Surprise</span>
+              <div class="conf-track"><div class="conf-fill surprise-fill" id="fillSurprise" style="width: 2%;"></div></div>
+              <span class="conf-pct" id="pctSurprise">2%</span>
+            </div>
+            <div class="conf-item sad-bar-item" id="meterSad" title="Sadness Confidence">
+              <span class="conf-label">😢 Sad</span>
+              <div class="conf-track"><div class="conf-fill sad-fill" id="fillSad" style="width: 1%;"></div></div>
+              <span class="conf-pct" id="pctSad">1%</span>
+            </div>
+          </div>
+
+          <!-- Main Input Field with Dynamic Emotion Font Color -->
+          <form class="composer-form" id="composerForm">
+            <div class="input-glow-wrapper" id="inputGlowWrapper">
+              <button type="button" class="composer-icon-btn" id="btnAttach" title="Attach media">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </button>
+
+              <textarea 
+                id="messageInput" 
+                class="message-textarea" 
+                rows="1" 
+                placeholder="Message (Font color adapts to your face expression...)" 
+                autocomplete="off"
+              ></textarea>
+
+              <div class="composer-actions">
+                <button type="submit" class="composer-send-btn" id="btnSend" title="Send message" aria-label="Send">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="composer-privacy-note">
+            <span>🔒 Pure on-device biometrics: Zero video or facial data ever leaves your device.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FLOATING PICTURE-IN-PICTURE 3D CAMERA HUD -->
+      <aside class="camera-pip-hud" id="cameraPip">
+        <div class="pip-header" id="pipHeader">
+          <div class="pip-title">
+            <span class="pip-status-dot" id="pipStatusDot"></span>
+            <span>Camera Preview</span>
+          </div>
+          <div class="pip-controls">
+            <button class="pip-btn" id="btnMinimizePip" title="Minimize">—</button>
+            <button class="pip-btn" id="btnClosePip" title="Close">&times;</button>
+          </div>
+        </div>
+
+        <div class="pip-body" id="pipBody">
+          <!-- Real webcam video feed -->
+          <video id="webcamVideo" autoplay playsinline muted></video>
+          <!-- 3D wireframe mesh & coordinate gimbal canvas -->
+          <canvas id="faceMeshCanvas"></canvas>
+
+          <!-- Fallback visualizer when camera stream is standby -->
+          <div class="simulated-face-preview" id="simulatedFacePreview">
+            <div class="sim-avatar" id="simAvatar">😐</div>
+            <div class="sim-metrics">
+              <div class="metric-row"><span>Status:</span><span id="hudCalStatus" style="color: #00e676;">Ready</span></div>
+              <div class="metric-row"><span>Valence:</span><span id="hudValence">0.00</span></div>
+              <div class="metric-row"><span>Arousal:</span><span id="hudArousal">0.20</span></div>
+            </div>
+          </div>
+
+          <div class="pip-overlay-info">
+            <span class="pip-emotion-badge" id="pipEmotionBadge">NEUTRAL</span>
+            <span class="pip-status-tag" id="pipStatusTag">Standby</span>
+            <span class="pip-fps" id="pipFps">60 FPS</span>
+          </div>
+        </div>
+
+        <div class="pip-footer">
+          <button class="pip-action-link" id="btnSwitchToCamera">Enable Live Camera</button>
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- FACS BIOMETRIC FACIAL ACTION UNIT TELEMETRY MODAL -->
+    <div class="modal-backdrop" id="telemetryModal" style="display: none;">
+      <div class="modal-card modal-sm">
+        <div class="modal-header">
+          <div class="modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2.2"><path d="M2 12h20M12 2v20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/></svg>
+            <h2>Facial Action Units & Biometric Studio</h2>
+          </div>
+          <button class="modal-close" id="btnCloseTelemetry">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="facs-tech-badge">
+            <span>⚡ Multi-Modal Consensus (FER Neural Network + Kinematic Action Units)</span>
+          </div>
+
+          <!-- Attention & Screen Engagement Gauge -->
+          <div class="engagement-card" id="engagementCard">
+            <div class="eng-meta">
+              <span>Attention / Screen Gaze Alignment:</span>
+              <strong id="valEngagement" class="eng-val">95%</strong>
+            </div>
+            <div class="eng-track"><div class="eng-fill" id="barEngagement" style="width: 95%;"></div></div>
+          </div>
+
+          <div class="axis-bars-list">
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>AU4 • Brow Lowerer / Corrugator (Anger):</span>
+                <span id="deltaBrow" class="axis-val">0%</span>
+              </div>
+              <div class="axis-track"><div class="axis-fill" id="barBrow" style="width: 0%; background: #ff2a55;"></div></div>
+            </div>
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>AU12 • Lip Corner Puller (Joy / Smile):</span>
+                <span id="deltaSmile" class="axis-val">0%</span>
+              </div>
+              <div class="axis-track"><div class="axis-fill" id="barSmile" style="width: 0%; background: #00e676;"></div></div>
+            </div>
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>AU6 • Cheek Raiser (Duchenne Joy):</span>
+                <span id="deltaCheek" class="axis-val">0%</span>
+              </div>
+              <div class="axis-track"><div class="axis-fill" id="barCheek" style="width: 0%; background: #00b0ff;"></div></div>
+            </div>
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>AU1+AU2 • Brow Raiser / Frontalis (Surprise):</span>
+                <span id="deltaBrowRaise" class="axis-val">0%</span>
+              </div>
+              <div class="axis-track"><div class="axis-fill" id="barBrowRaise" style="width: 0%; background: #b026ff;"></div></div>
+            </div>
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>AU15 • Lip Corner Depressor (Sadness):</span>
+                <span id="deltaFrown" class="axis-val">0%</span>
+              </div>
+              <div class="axis-track"><div class="axis-fill" id="barFrown" style="width: 0%; background: #38b6ff;"></div></div>
+            </div>
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>AU26 • Jaw Drop / Masseter (Awe):</span>
+                <span id="deltaJaw" class="axis-val">0%</span>
+              </div>
+              <div class="axis-track"><div class="axis-fill" id="barJaw" style="width: 0%; background: #ff9100;"></div></div>
+            </div>
+            <div class="axis-item">
+              <div class="axis-meta">
+                <span>Head 3D Pose (Pitch / Yaw / Roll):</span>
+                <span id="poseVal" class="axis-val">0° / 0° / 0°</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHATSAPP INTEGRATION BLUEPRINT MODAL -->
+    <div class="modal-backdrop" id="guideModal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00a884" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <h2>WhatsApp Mobile & Web Integration Blueprint</h2>
+          </div>
+          <button class="modal-close" id="btnCloseGuide">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">
+            How to deploy <strong>Real-time Facial Axis & Baseline Comparison</strong> to WhatsApp Web and WhatsApp Mobile:
+          </p>
+          <div class="guide-grid">
+            <div class="guide-card">
+              <div class="card-icon">📐</div>
+              <h3>1. Calibration & Delta Pipeline</h3>
+              <p>When WhatsApp opens, a 2-second baseline captures the resting face. Every frame calculates $\vec{\Delta} = \vec{P}_{\text{live}} - \vec{P}_{\text{neutral}}$.</p>
+            </div>
+            <div class="guide-card">
+              <div class="card-icon">🎨</div>
+              <h3>2. Emotional Typography</h3>
+              <p>Font color fluidly reflects user emotion (Crimson for anger, Emerald for joy, Azure for sadness) with continuous color morphing.</p>
+            </div>
+            <div class="guide-card">
+              <div class="card-icon">📱</div>
+              <h3>3. Mobile Keyboard IME Hook</h3>
+              <p>On Android and iOS, a custom keyboard extension accesses the front camera with zero typing latency.</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-primary-btn" id="btnCloseGuideBtn">Got it, Let's Chat!</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PRETRAINED FACIAL EXPRESSION RECOGNITION (FER) MODEL -->
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+  <!-- GOOGLE MEDIAPIPE FACEMESH (On-Device 468-point 3D Landmark Biometrics) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="js/emotionEngine.js"></script>
+  <script src="js/chatApp.js"></script>
+</body>
+</html>
